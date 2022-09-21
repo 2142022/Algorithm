@@ -1,6 +1,8 @@
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Scanner;
 
-public class N과M5 {
+public class N과M9 {
 
 	static int N;
 	static int M;
@@ -8,6 +10,10 @@ public class N과M5 {
 	static int[] nums;
 	static int[] result;
 	static int[] flag;
+
+	// 동일한 결과값 체크하기 위해 LinkedHashSet 사용
+	// HashSet은 원소의 순서가 바뀌기 때문에 사용 불가
+	static LinkedHashSet<String> ans;
 
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
@@ -39,17 +45,29 @@ public class N과M5 {
 		// 결과에 포함하면 1, 아니면 0
 		flag = new int[N];
 
+		// 동일한 결과값 체크하기 위해 LinkedHashSet 사용
+		// HashSet은 원소의 순서가 바뀌기 때문에 사용 불가
+		ans = new LinkedHashSet<>();
+
 		// 순열
 		permutation(0);
+
+		Iterator<String> it = ans.iterator();
+		while (it.hasNext()) {
+			System.out.println(it.next());
+		}
 	}
 
 	static void permutation(int cnt) {
 		// 결과에 M개의 원소가 들어가면 끝내기
 		if (cnt == M) {
+			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < M; i++) {
-				System.out.print(result[i] + " ");
+				sb.append(result[i]).append(" ");
 			}
-			System.out.println();
+
+			// LinkedHashSet에 추가
+			ans.add(sb.toString());
 			return;
 		}
 
