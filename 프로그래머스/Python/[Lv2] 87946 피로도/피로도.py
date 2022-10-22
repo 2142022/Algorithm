@@ -1,3 +1,5 @@
+# https://school.programmers.co.kr/learn/courses/30/lessons/87946
+
 # k: 현재 남은 피로도
 # idx: 현재 탐험할 던전
 # cnt: 현재까지 탐험한 던전 수

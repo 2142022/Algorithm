@@ -1,3 +1,5 @@
+# https://school.programmers.co.kr/learn/courses/30/lessons/42576
+
 def solution(participant, completion):
     # 참가자와 완주자를 이름순으로 정렬
     participant.sort()

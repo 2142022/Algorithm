@@ -1,3 +1,5 @@
+# https://school.programmers.co.kr/learn/courses/30/lessons/17687
+
 # number를 n진법으로 바꾸기
 def getNum(number, n):
     result = []
