@@ -1,43 +1,89 @@
+from collections import deque
 import sys
 input = sys.stdin.readline
 
-# N: 학생 수(=마을의 수), M: 단방향 도로의 개수, X: 파티를 하는 마을
-N, M, X = map(int, input().split())
+# 각 학생이 파티 마을에서 집까지 돌아오는데 걸리는 시간 구하기
+# X: 파티 마을
+def comeback(X):
+    global N
 
-# T[i][j]: i마을에서 j마을까지 가는데 걸리는 시간
-# 마을의 번호가 1부터 시작하므로 N+1
-T = [[2147483647] * (N + 1) for _ in range(N + 1)]
+    # 각 학생이 파티 마을에서 집까지 돌아오는데 걸리는 시간
+    time1 = [sys.maxsize] * (N + 1)
 
-for _ in range(M):
-    # s: 출발 마을, d: 도착 마을, t: 걸리는 시간
-    s, d, t = map(int, input().split())
+    # 현재 마을 번호와 현재까지 걸린 시간을 담은 큐
+    q = deque([(X, 0)])
+    time1[X] = 0
 
-    T[s][d] = t
+    # 연결된 도로 탐색
+    while q:
+        # 현재 마을 번호, 현재까지 걸린 시간
+        i, t = q.popleft()
 
-# 플로이드 워셜
-# 중간에 지나가는 마을
-for k in range(1, N + 1):
-    # 출발 마을
-    for i in range(1, N + 1):
-        # 시간 초과 방지를 위해 T[i][k]가 2147483647인 경우(i마을에서 k마을로 가는 도로가 없는 경우)는 패스
-        if T[i][k] == 2147483647:
+        # 더 적게 걸리는 경로를 찾았다면 패스
+        if time1[i] < t:
             continue
 
-        # 도착 마을
-        for j in range(1, N + 1):
-            # 출발 마을과 도착 마을이 같은 경우
-            if i == j:
-                T[i][j] = 0
-            # 시간 초과 방지를 위해 T[k][j]가 2147483647인 경우(k마을에서 j마을로 가는 도로가 없는 경우)는 패스
-            elif T[k][j] == 2147483647:
-                continue
-            # 최단 거리 비교: 기존 시간과 다른 마을을 지날 때 걸리는 시간 비교
-            else:
-                T[i][j] = min(T[i][j], T[i][k] + T[k][j])
+        # 연결된 마을 탐색
+        for ni, nt in connect[i]:
+            # 현재 저장된 시간보다 적게 걸리는 경우, 큐에 추가
+            if t + nt < time1[ni]:
+                time1[ni] = t + nt
+                q.append((ni, t + nt))
 
-# 파티에 오고 가는데 가장 오래 걸리는 학생의 소요 시간
-result = 0
+    return time1
+
+################################################################
+
+# 학생S가 파티까지 가는데 걸리는 시간 구하기
+# X: 파티 마을
+def go_party(S, X):
+    global N
+
+    # 학생S가 각 마을까지 가는데 걸리는 시간
+    time2 = [sys.maxsize] * (N + 1)
+
+    # 현재 마을 번호와 현재까지 걸린 시간을 담은 큐
+    q = deque([(S, 0)])
+    time2[S] = 0
+
+    # 연결된 도로 탐색
+    while q:
+        # 현재 마을 번호, 현재까지 걸린 시간
+        i, t = q.popleft()
+
+        # 더 적게 걸리는 경로를 찾았다면 패스
+        if time2[i] < t:
+            continue
+
+        # 연결된 마을 탐색
+        for ni, nt in connect[i]:
+            # 현재 저장된 시간보다 적게 걸리는 경우, 큐에 추가
+            if t + nt < time2[ni]:
+                time2[ni] = t + nt
+                q.append((ni, t + nt))
+
+    return time2[X]
+
+################################################################
+
+# N: 학생 수, M: 도로 수, X: 파티 마을
+N, M, X = map(int, input().split())
+
+# 도로 정보
+connect = [list() for _ in range(N + 1)]
+for _ in range(M):
+    start, end, time = map(int, input().split())
+    connect[start].append((end, time))
+
+# 각 학생이 파티 마을에서 집까지 돌아오는데 걸리는 시간
+time = comeback(X)
+
+# 최대 왕복 시간
+max_time = 0
+
+# 각 학생의 왕복 시간 구하기
 for i in range(1, N + 1):
-    result = max(result, T[i][X] + T[X][i])
+    t = go_party(i, X) + time[i]
+    max_time = max(max_time, t)
 
-print(result)
+print(max_time)
