@@ -47,7 +47,7 @@ while q:
                 continue
 
             # 경로(비트마스킹) 갱신
-            next_path_bit = path_bit + pos_bit
+            next_path_bit = path_bit | pos_bit
             # 사용한 경로 체크
             if visited[next_path_bit]:
                 continue

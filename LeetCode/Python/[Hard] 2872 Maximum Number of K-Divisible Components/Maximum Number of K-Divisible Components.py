@@ -38,7 +38,7 @@ class Solution:
                 # 방문 체크
                 if visit & (1 << node):
                     continue
-                visit += (1 << node)
+                visit |= (1 << node)
 
                 # 현재 노드까지의 value가 k의 배수라면 cnt 갱신
                 if values[node] % k == 0:
