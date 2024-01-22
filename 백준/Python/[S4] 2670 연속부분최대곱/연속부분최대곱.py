@@ -13,8 +13,4 @@ for i in range(1, N):
     num = float(input())
     dp[i] = max(dp[i - 1] * num, num)
 
-print('%.3f' % max(dp))
-
-# 다음과 같이 쓰면 틀림
-# 반례: 1.0이 들어오면 1.0으로 출력됨 (정답: 1.000)
-# print(round(max(dp), 3))
+print(f'{max(dp):.3f}')

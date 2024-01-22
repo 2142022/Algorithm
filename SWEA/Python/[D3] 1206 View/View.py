@@ -1,20 +1,17 @@
-#10번 반복
-for i in range(10):
+# 테스트 케이스
+for t in range(1, 11):
+    # 건물 수
+    N = int(input())
 
-    length = int(input())                   #테스트 케이스 길이
-    arr = list(map(int,input().split()))    #공백을 기준으로 int형으로 입력받고 리스트로 만듦
-    result = 0
+    # 건물 높이
+    H = list(map(int, input().split()))
 
-    #앞, 뒤 2칸씩 0이므로 range(2,length-2)
-    for j in range(2,length-2):
+    # 조망권이 확보된 세대 수
+    cnt = 0
 
-        #자기 자신을 기준으로 앞뒤 2칸씩 슬라이싱
-        tmp = arr[j-2:j+3]
+    # 건물 하나씩 탐색
+    for i in range(2, N - 2):
+        # 왼쪽 2개, 오른쪽 2개 확인
+        cnt += min(max(0, H[i] - max(H[i - 1], H[i - 2])), max(0, H[i] - max(H[i + 1], H[i + 2])))
 
-        #자시 자신이 최대값이면 조망권 확보
-        if (max(tmp) == arr[j]):
-            #조망권 세대 수는 (최대값 - 다음으로큰 수)
-            tmp.sort()
-            result = result + tmp[4] - tmp[3]
-
-    print('#' + str(i+1) + ' ' + str(result))
+    print(f'#{t} {cnt}')
