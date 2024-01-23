@@ -1,140 +1,73 @@
-import sys
-input = sys.stdin.readline
+# Core 하나씩 전원 연결하기
+# idx: Core 번호
+# connect: 현재까지 연결한 Core 개수
+# l: 현재까지 연결한 전선의 길이
+# used: core나 전선이 있는 곳 체크
+def dfs(idx, connect, l, used):
+    global N, cnt, length
 
-# 전선을 놓을 수 있는지 체크
-def check(status, r, c, case):
-    # 상
-    if case == 1:
-        for i in range(0, r):
-            if status[i][c] == 1:
-                return False
-        return True
-
-    # 하
-    elif case == 2:
-        for i in range(r + 1, N):
-            if status[i][c] == 1:
-                return False
-        return True
-
-    # 좌
-    elif case == 3:
-        for i in range(0, c):
-            if status[r][i] == 1:
-                return False
-        return True
-
-    # 우
-    elif case == 4:
-        for i in range(c + 1, N):
-            if status[r][i] == 1:
-                return False
-        return True
-    
-#################################################################
-
-# idx: core의 인덱스
-# cnt: 현재까지 전원에 연결한 core의 개수
-# length: 현재까지의 전선 길이 합
-def solve(status, idx, cnt, length):
-    global max_core, min_sum
-    
-    # core를 모두 확인하면 끝내기
-    if idx == len(core):
-        # 현재까지 전원에 연결한 core의 개수가 max_core보다 크면 min_sum 바꾸기
-        if cnt > max_core:
-            max_core = cnt
-            min_sum = length
-
-        # 현재까지 전원에 연결한 core의 개수가 max_core와 같다면 값 비교
-        elif cnt == max_core:
-            min_sum = min(length, min_sum)
-
+    # 모든 Core 탐색한 경우 끝내기
+    if idx == len(cores):
+        if connect > cnt:
+            cnt, length = connect, l
+        elif connect == cnt and l < length:
+            length = l
         return
 
-    # 가장 자리에 위치한 core는 이미 전원이 연결되어 있으므로 패스
-    if core[idx][0] == 0 or core[idx][0] == N - 1 or core[idx][1] == 0 or core[idx][1] == N - 1:
-        solve(status, idx + 1, cnt + 1, length)
-        
-    else:
-        # 위로 전선을 놓을 수 있는 경우
-        if check(status, core[idx][0], core[idx][1], 1):
-            tmp = [[0] * N for i in range(N)]
-            for i in range(N):
-                for j in range(N):
-                    if j == core[idx][1] and i < core[idx][0]:
-                        tmp[i][j] = 1
-                    else:
-                        tmp[i][j] = status[i][j]
+    # 남은 core를 모두 더해도 현재 최대 core 개수보다 적은 경우 끝내기
+    if connect + len(cores) - idx < cnt:
+        return
 
-            solve(tmp, idx + 1, cnt + 1, length + core[idx][0])
+    # Core의 위치
+    r, c = cores[idx]
 
-        # 아래로 전선을 놓을 수 있는 경우
-        if check(status, core[idx][0], core[idx][1], 2):
-            tmp = [[0] * N for i in range(N)]
-            for i in range(N):
-                for j in range(N):
-                    if j == core[idx][1] and i > core[idx][0]:
-                        tmp[i][j] = 1
-                    else:
-                        tmp[i][j] = status[i][j]
+    # 사방 탐색용
+    dr, dc = (-1, 1, 0, 0), (0, 0, -1, 1)
 
-            solve(tmp, idx + 1, cnt + 1, length + N - 1 - core[idx][0])
+    # 현재 Core를 전원 연결하지 않고 패스
+    dfs(idx + 1, connect, l, used)
 
-        # 왼쪽으로 전선을 놓을 수 있는 경우
-        if check(status, core[idx][0], core[idx][1], 3):
-            tmp = [[0] * N for i in range(N)]
-            for i in range(N):
-                for j in range(N):
-                    if i == core[idx][0] and j < core[idx][1]:
-                        tmp[i][j] = 1
-                    else:
-                        tmp[i][j] = status[i][j]
-
-            solve(tmp, idx + 1, cnt + 1, length + core[idx][1])
-
-        # 오른쪽으로 전선을 놓을 수 있는 경우
-        if check(status, core[idx][0], core[idx][1], 4):
-            tmp = [[0] * N for i in range(N)]
-            for i in range(N):
-                for j in range(N):
-                    if i == core[idx][0] and j > core[idx][1]:
-                        tmp[i][j] = 1
-                    else:
-                        tmp[i][j] = status[i][j]
-
-            solve(tmp, idx + 1, cnt + 1, length + N - 1 - core[idx][1])
-
-        # 전선을 놓지 않고 패스
-        solve(status, idx + 1, cnt, length)
+    # 사방으로 전선 두기
+    for d in range(4):
+        # 현재 방향으로 전선을 뒀을 때 전원 연결이 가능한지 확인
+        nr, nc, nu, nl = r + dr[d], c + dc[d], used, l
+        while 0 <= nr < N and 0 <= nc < N and not nu & 1 << (N * nr + nc):
+            nu |= 1 << (N * nr + nc)
+            nl += 1
+            nr += dr[d]
+            nc += dc[d]
+        if not (0 <= nr < N and 0 <= nc < N):
+            dfs(idx + 1, connect + 1, nl, nu)
 
 
-#####################################################################    
+#####################################################################################
 
-# 테스트케이스 개수
+# 테스트 케이스 개수
 T = int(input())
-
-# T개의 테스트케이스
 for t in range(1, T + 1):
-    # cell 판의 크기
+    # 멕시노스 크기
     N = int(input())
 
-    # cell 판의 정보
-    cell = [list(map(int, input().split())) for i in range(N)]
-
-    # core의 위치
-    core = []
+    # 전원이 연결된 core의 최대 개수
+    cnt = 0
+    # 전원이 연결되지 않은 core의 위치
+    cores = []
+    # core나 전선이 있는 곳 체크
+    used = 0
     for i in range(N):
+        info = list(map(int, input().split()))
         for j in range(N):
-            if cell[i][j] == 1:
-                core.append([i, j])
+            if info[j] == 1:
+                if i == 0 or j == 0:
+                    cnt += 1
+                else:
+                    cores.append((i, j))
+                used |= 1 << (N * i + j)
 
-    # 전원에 연결된 최대 core의 개수
-    max_core = 0
+    # core를 최대로 연결했을 때, 전선의 최소 길이
+    length = N * N
 
-    # 최소 전선 길이 합
-    min_sum = N * N
+    # DFS로 하나씩 연결해보기
+    dfs(0, cnt, 0, used)
 
-    solve(cell, 0, 0, 0)
-
-    print("#" + str(t) + " " + str(min_sum))
+    print(f'#{t} {length}')

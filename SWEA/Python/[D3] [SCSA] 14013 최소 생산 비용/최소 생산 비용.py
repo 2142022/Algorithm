@@ -1,4 +1,25 @@
-from heapq import heappush, heappop
+# 한 공장씩 제품 선택하기
+# idx: 탐색할 공장
+# used: 이미 정해진 제품 체크
+# cost: 현재까지의 비용
+def dfs(idx, used, cost):
+    global N, mn
+
+    # 모든 공장을 탐색한 경우 끝내기
+    if idx == N:
+        mn = min(mn, cost)
+        return
+
+    # 현재 최소 비용보다 큰 비용이 나온 경우 패스
+    if cost >= mn:
+        return
+
+    # 현재 공장이 생산할 제품 선택
+    for i in range(N):
+        if not used & 1 << i:
+            dfs(idx + 1, used | 1 << i, cost + costs[idx][i])
+
+#####################################################################
 
 # 테스트 케이스 수
 T = int(input())
@@ -9,28 +30,10 @@ for t in range(1, T + 1):
     # 공장별 생산 비용
     costs = [list(map(int, input().split())) for _ in range(N)]
 
-    # 방문 체크 (같은 제품의 조합을 탐색하는 경우가 없도록)
-    visited = set()
+    # 최소 생산 비용
+    mn = 1500
 
-    # 현재까지의 비용, 공장 번호, 선택된 제품을 담은 최소 힙
-    h = []
-    heappush(h, (0, 0, 0))
-    while h:
-        # 현재까지의 비용, 공장 번호, 선택된 제품
-        cost, idx, selected = heappop(h)
+    # 한 공장씩 제품 선택하기
+    dfs(0, 0, 0)
 
-        # 모든 제품이 선택된 경우 끝내기
-        if idx == N:
-            print(f'#{t} {cost}')
-            break
-
-        # 이미 확인한 조합인 경우 패스
-        if selected in visited:
-            continue
-        visited.add(selected)
-
-        # 현재 공장에서의 제품 선택
-        for i in range(N):
-            # 이미 다른 공장에서 선택한 제품이 아니며, 아직 확인하지 않은 조합 탐색
-            if not selected & 1 << i:
-                heappush(h, (cost + costs[idx][i], idx + 1, selected | 1 << i))
+    print(f'#{t} {mn}')
