@@ -1,3 +1,6 @@
+import sys
+sys.stdin = open("input.txt", "r")
+
 # Core 하나씩 전원 연결하기
 # idx: Core 번호
 # connect: 현재까지 연결한 Core 개수
