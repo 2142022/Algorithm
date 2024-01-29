@@ -4,23 +4,24 @@ input = sys.stdin.readline
 # 탑의 수
 N = int(input())
 
-# 탑 높이
-H = list(map(int, input().split()))
+# 탑의 높이
+tops = list(map(int, input().split()))
 
-# 각 탑의 레이저 신호를 수신하는 탑의 번호
+# 각 탑에서 발사한 레이저 신호를 수신한 탑들의 번호
 idx = [0] * N
 
-# 각 탑의 번호와 높이를 저장한 스택
+# 레이저 신호를 수신한 탑이 없는 탑들의 번호와 높이를 담은 스택
 stack = []
-for i in range(N, 0, -1):
-    # 탐색하는 탑의 높이
-    h = H[i - 1]
+for i in range(N - 1, - 1, -1):
+    # 레이저 신호를 보내는 탑의 높이
+    h = tops[i]
 
-    # 스택에 있는 탑이 현재 탑보다 작다면 현재 탑이 신호 수신
-    while stack and stack[-1][1] < h:
-        idx[stack.pop()[0]] = i
+    # 현재 탑이 수신할 수 있는 레이저 신호 수신하기
+    # 탑의 번호가 1부터 시작하므로 +1
+    while stack and h >= stack[-1][1]:
+        idx[stack.pop()[0]] = i + 1
 
     # 현재 탑 스택에 저장
-    stack.append((i - 1, h))
+    stack.append((i, h))
 
 print(*idx)
