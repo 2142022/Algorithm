@@ -1,40 +1,44 @@
+from collections import deque
 import sys
 input = sys.stdin.readline
 
-# BFS 사용하여 미로 탐색
-def bfs(r, c):
-    tmp = []
-    tmp.append([r, c])
-    cnt[r][c] = 1
+# 목적지(마지막 칸)까지 지나야 하는 최소 칸 수 구하기
+def bfs():
+    # 사방 탐색용
+    dr, dc = (-1, 1, 0, 0), (0, 0, -1, 1)
 
-    dr = [-1, 1, 0, 0]
-    dc = [0, 0, -1, 1]
+    # 현재 위치를 담은 큐
+    q = deque([(0, 0)])
+    while q:
+        # 현재 위치
+        r, c = q.popleft()
 
-    # tmp 원소가 없어질 때까지 반복
-    while tmp:
-        # 첫 번째 원소 pop
-        tmp_r, tmp_c = tmp.pop(0)
+        # 현재 위치까지의 거리
+        cnt = maze[r][c]
 
-        for i in range(4):
-            nr = tmp_r + dr[i]
-            nc = tmp_c + dc[i]
-            
-            if (nr == N - 1) and (nc == M - 1):
-                return cnt[tmp_r][tmp_c] + 1
-            
-            if (0 <= nr < N) and (0 <= nc < M) and (maze[nr][nc] == 1):
-                # cnt가 0이면 아직 방문하지 않았음을 의미
-                if cnt[nr][nc] == 0:
-                    tmp.append([nr, nc])
-                    cnt[nr][nc] = cnt[tmp_r][tmp_c] + 1
+        # 사방 탐색
+        for d in range(4):
+            nr, nc = r + dr[d], c + dc[d]
 
-# 미로 크기: N X M
+            # 아직 방문하지 않은 경우 방문
+            if 0 <= nr < N and 0 <= nc < M and maze[nr][nc] == 0:
+                # 목적지인 경우 끝내기
+                if nr == N - 1 and nc == M - 1:
+                    return cnt + 1
+
+                # 거리 갱신
+                maze[nr][nc] = cnt + 1
+                q.append((nr, nc))
+
+##############################################################################################
+
+global N, M
+# 미로 크기
 N, M = map(int, input().split())
 
-# 미로 입력받기 (strip: 마지막 개행 제거하기 위해 사용)
-maze = [list(map(int, input().strip())) for i in range(N)]
+# 미로 (이동할 수 있는 칸: 0, 이동할 수 없는 칸: -1)
+maze = [list(map(lambda x: {'1': 0, '0': -1}[x], input().rstrip())) for _ in range(N)]
+maze[0][0] = 1
 
-# r, c행까지 갈 때까지 지나는 횟수
-cnt = [[0] * M for i in range(N)]
-
-print(bfs(0, 0))
+# BFS로 마지막 위치까지 이동하기
+print(bfs())
