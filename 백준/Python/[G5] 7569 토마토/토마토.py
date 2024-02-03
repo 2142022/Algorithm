@@ -1,75 +1,61 @@
-from collections import deque
+from collections import deque, defaultdict
 import sys
 input = sys.stdin.readline
 
-# 토마토가 모두 익었는지 체크하는 함수
-def check():
-    global M, N, H
-    flag = 1
+# 모든 토마토가 익을 때까지 걸리는 최소 일수
+def bfs(H, N, M, remain):
+    # 육방 탐색용
+    dh, dr, dc = (0, 0, 0, 0, -1, 1), (-1, 1, 0, 0, 0, 0), (0, 0, -1, 1, 0, 0)
 
-    for h in range(H):
-        for n in range(N):
-            for m in range(M):
+    while q:
+        # 현재 토마토 위치
+        h, r, c = q.popleft()
 
-                # 하나라도 안 익은 토마토가 있으면 0 반환
-                if tomato[h][n][m] == 0:
-                    flag = 0
-                    return 0
-    return 1
+        # 현재 토마토가 익기까지 걸린 일 수
+        day = tomatoes[h][r][c]
 
-# 토마토가 모두 익을 때까지 최소 며칠이 걸리는지 구하는 함수
-def solve():
-    global M, N, H
+        # 육방 탐색
+        for d in range(6):
+            nh, nr, nc = h + dh[d], r + dr[d], c + dc[d]
+            if 0 <= nh < H and 0 <= nr < N and 0 <= nc < M and tomatoes[nh][nr][nc] == 0:
+                remain -= 1
+                # 모든 토마토가 익은 경우 (처음부터 토마토가 익은 날이 1로 돼있으므로 +1 하지 않음)
+                if remain == 0:
+                    return day
+                tomatoes[nh][nr][nc] = day + 1
+                q.append((nh, nr, nc))
 
-    # 며칠 째인지
-    date = 0
+    # 모든 토마토가 익지 못하는 경우
+    return -1
 
-    # 익은 토마토의 위치를 큐에 넣기
-    queue = deque()
-    for h in range(H):
-        for n in range(N):
-            for m in range(M):
-                if tomato[h][n][m] == 1:
-                    queue.append([h, n, m, date])
+##############################################################################################################
 
-    # 앞, 뒤, 좌, 우, 상, 하 비교
-    dh = [0, 0, 0, 0, -1, 1]
-    dn = [-1, 1, 0, 0, 0, 0]
-    dm = [0, 0, -1, 1, 0, 0]
-
-    # queue의 원소가 없을 때까지 탐색
-    while queue:
-        # 탐색할 토마토의 위치와 현재 며칠 째인지 구하기
-        tmp_h, tmp_n, tmp_m, date = queue.popleft()
-
-        for i in range(6):
-            nh = tmp_h + dh[i]
-            nn = tmp_n + dn[i]
-            nm = tmp_m + dm[i]
-
-            # 안 익은 토마토라면 queue에 추가
-            if (0 <= nh < H) and (0 <= nn < N) and (0 <= nm < M) and (tomato[nh][nn][nm] == 0):
-                queue.append([nh, nn, nm, date + 1])
-                tomato[nh][nn][nm] = 1
-
-    # 모두 익었는지 확인
-    if check():
-        return date
-    else:
-        return -1
-    
-
+# 상자 크기, 수
 M, N, H = map(int, input().split())
 
-# 토마토 상태 입력받기
-tomato = [[[0]*M for n in range(N)] for h in range(H)]
+# 상자 정보
+tomatoes = []
+# 익은 토마토 위치를 담은 큐
+q = deque()
+# 익지 않은 토마토 개수
+remain = 0
+for k in range(H):
+    box = []
+    for i in range(N):
+        row = list(map(int, input().split()))
+        box.append(row)
+        for j, num in enumerate(row):
+            if num == 0:
+                remain += 1
+            elif num == 1:
+                q.append((k, i, j))
+    tomatoes.append(box)
 
-for h in range(H):
-    for n in range(N):
-        tomato[h][n] = list(map(int, input().split()))
-
-# 처음부터 다 익어있는지 확인
-if check():
+# 이미 모든 토마토가 익어있는 경우
+if remain == 0:
     print(0)
+
+# 모든 토마토가 익을 때까지 걸리는 최소 일수
 else:
-    print(solve())
+    print(bfs(H, N, M, remain))
+
