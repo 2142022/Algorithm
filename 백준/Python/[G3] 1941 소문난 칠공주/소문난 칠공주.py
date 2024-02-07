@@ -1,69 +1,52 @@
-from collections import deque, defaultdict
 import sys
 input = sys.stdin.readline
 
-# 이다솜 파: 0, 임도연 파: 1
-isY = {'S': 0, 'Y': 1}
+# 한 명씩 선택
+# cnt: 뽑은 사람 수
+# s: 임도연파 + 이다솜파
+# path: 탐색 경로
+def dfs(cnt, s, path):
+    global result
 
-# 자리 배치 (S=0, Y=1로 입력받기)
-seat = [list(map(lambda x: isY[x], input().rstrip())) for _ in range(5)]
+    # 모든 사람을 뽑은 경우
+    if cnt == 7:
+        if s > 0:
+            result += 1
+        return
 
-# 소문난 칠공주를 결성할 수 있는 경우의 수
-cnt = 0
+    # 나머지 다른 사람을 모두 이다솜파라고 해도 4명이 안 되는 경우 끝내기
+    if 7 - cnt + s < 0:
+        return
 
-# 사방 탐색용
-dr = (-1, 1, 0, 0)
-dc = (0, 0, -1, 1)
+    # 이어질 수 있는 한 사람 선택하기
+    for r, c in pos:
+        for nr, nc in ((r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)):
+            if 0 <= nr < 5 and 0 <= nc < 5 and (nr, nc) not in pos and path | 1 << (5 * nr + nc) not in checked:
+                pos.append((nr, nc))
+                checked.add(path | 1 << (5 * nr + nc))
+                dfs(cnt + 1, s + seat[nr][nc], path | 1 << (5 * nr + nc))
+                pos.pop()
 
-# 사용한 경로 체크 (기본값은 0)
-visited = defaultdict(int)
+####################################################################################################################
 
-# 현재 인원, 임도연파의 인원, 경로(비트마스킹), 경로(리스트)를 담은 큐
-q = deque()
+# 자리 정보
+seat = [list(map(lambda x : 1 if x == 'S' else -1, input().rstrip())) for _ in range(5)]
+
+# 소문난 칠공주를 결성할 수 있는 가짓수
+result = 0
+
+# 탐색한 경로 체크
+checked = set()
+
+# 현재 조합의 위치
+pos = []
+
+# 한 명씩 선택
 for i in range(5):
     for j in range(5):
-        q.append((1, seat[i][j], 1 << (i * 5 + j), [(i, j)]))
+        pos.append((i, j))
+        checked.add(1 << (5 * i + j))
+        dfs(1, seat[i][j], 1 << (5 * i + j))
+        pos.pop()
 
-# 큐 탐색
-while q:
-    # 현재 인원, 임도연파의 인원, 경로(비트마스킹), 경로(리스트)
-    total, ycnt, path_bit, path  = q.popleft()
-
-    # 방문한 곳의 사방 탐색
-    for r, c in path:
-        for d in range(4):
-            # 다음 위치
-            nr = r + dr[d]
-            nc = c + dc[d]
-
-            # 범위를 초과하면 패스
-            if not (0 <= nr < 5 and 0 <= nc < 5):
-                continue
-
-            # 다음 위치(비트마스킹)
-            pos_bit = 1 << (nr * 5 + nc)
-            # 이미 방문한 곳 패스
-            if path_bit & pos_bit:
-                continue
-
-            # 경로(비트마스킹) 갱신
-            next_path_bit = path_bit | pos_bit
-            # 사용한 경로 체크
-            if visited[next_path_bit]:
-                continue
-            visited[next_path_bit] = 1
-
-            # 임도연파는 3명까지 가능
-            nycnt = ycnt + seat[nr][nc]
-            if nycnt > 3:
-                continue
-
-            # 소문난 칠공주를 결성한 경우
-            if total == 6:
-                cnt += 1
-                continue
-
-            # 다음 위치 큐에 추가
-            q.append((total + 1, nycnt, next_path_bit, path + [(nr, nc)]))
-
-print(cnt)
+print(result)
