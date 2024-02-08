@@ -1,35 +1,23 @@
+import sys
+input = sys.stdin.readline
+
+# 명령의 수
 N = int(input())
+
+# 스택
 stack = []
 
-for i in range(N):
-    option = input()
+# 명령
+for _ in range(N):
+    op, *num = input().split()
 
-    #숫자 넣기
-    if "push" in option:
-        order, num = map(str, option.split())
-        stack.append(int(num))
-
-    #마지막 원소 뽑기(원소가 없으면 -1 출력)
-    elif option == "pop":
-        if len(stack) == 0:
-            print(-1)
-        else:
-            print(stack.pop())
-
-    #리스트 길이 출력
-    elif option == "size":
+    if op == 'push':
+        stack.append(num[0])
+    elif op == 'pop':
+        print(stack.pop() if stack else -1)
+    elif op == 'size':
         print(len(stack))
-
-    #원소가 없으면 1, 있으면 0출력
-    elif option == "empty":
-        if len(stack) == 0:
-            print(1)
-        else:
-            print(0)
-
-    #마지막 원소 출     
-    elif option == "top":
-        if len(stack) == 0:
-            print(-1)
-        else:
-            print(stack[-1])
+    elif op == 'empty':
+        print(0 if stack else 1)
+    else:
+        print(stack[-1] if stack else -1)
