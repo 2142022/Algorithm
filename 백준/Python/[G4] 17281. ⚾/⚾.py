@@ -5,67 +5,61 @@ input = sys.stdin.readline
 # 이닝 수
 N = int(input())
 
-# 각 이닝에서 각 선수가 얻는 결과
-# innings[i][j]: i번째 이닝에서 j번째 선수가 얻는 결과
-innings = [list(map(int, input().split())) for _ in range(N)]
+# 각 선수가 각 이닝에서는 얻는 결과
+players= [list(map(int, input().split())) for _ in range(N)]
 
-# 최대 점수
+# 최대 득점
 max_score = 0
 
-# 선수 순서 정하기
-for i in permutations(range(1, 9), 8):
-    # 선수 순서 (0번 선수는 4번째 타자)
-    order = list(i)
-    players = order[:3] + [0] + order[3:]
+# 선수 순서
+for perm in permutations(range(1, 9), 8):
+    perm_list = list(perm)
+    order = perm_list[:3] + [0] + perm_list[3:]
 
-    # 점수, 아웃 수
-    score = out = 0
+    # 이닝 수, 현재 타자 (번호가 아닌 9명 중의 순서), 총 점수. 아웃 수
+    cnt = p = score = out = 0
 
-    # 1루, 2루, 3루에 사람이 있는지 없는지 체크
-    b1 = b2 = b3 = 0
-
-    # 타자 선수
-    idx = 0
+    # 각 루에 선수가 있는지 체크
+    e1 = e2 = e3 = 0
 
     # 끝날 때까지 반복
-    n = 0
-    while n < N:
-        # 현재 타자 선수
-        p = players[idx]
+    while cnt < N:
+        # 현재 타자의 번호
+        player = order[p]
 
-        # 현재 선수가 친 공
-        ball = innings[n][p]
+        # 현재 타자가 얻는 결과
+        result = players[cnt][player]
 
         # 안타
-        if ball == 1:
-            score += b3
-            b3, b2, b1 = b2, b1, 1
+        if result == 1:
+            score += e3
+            e1, e2, e3 = 1, e1, e2
 
-        # 2루타:
-        elif ball == 2:
-            score += b2 + b3
-            b3, b2, b1 = b1, 1, 0
+        # 2루타
+        elif result == 2:
+            score += e2 + e3
+            e1, e2, e3 = 0, 1, e1
 
-        # 3루타:
-        elif ball == 3:
-            score += b1 + b2 + b3
-            b3, b2, b1 = 1, 0, 0
+        # 3루타
+        elif result == 3:
+            score += e1 + e2 + e3
+            e1, e2, e3 = 0, 0, 1
 
         # 홈런
-        elif ball == 4:
-            score += 1 + b1 + b2 + b3
-            b3 = b2 = b1 = 0
+        elif result == 4:
+            score += e1 + e2 + e3 + 1
+            e1, e2, e3 = 0, 0, 0
 
         # 아웃
         else:
             out += 1
             if out == 3:
-                n += 1
-                b1 = b2 = b3 = 0
+                cnt += 1
                 out = 0
+                e1, e2, e3 = 0, 0, 0
 
         # 다음 선수
-        idx = (idx + 1) % 9
+        p = (p + 1) % 9
 
     # 점수 비교
     max_score = max(max_score, score)
