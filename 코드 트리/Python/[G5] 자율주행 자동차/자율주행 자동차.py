@@ -1,26 +1,26 @@
 import sys
 input = sys.stdin.readline
 
-# 방 크기
-N, M = map(int, input().split())
+# 도로 크기
+n, m = map(int, input().split())
 
-# 로봇 청소기 위치, 방향
+# 자동차 위치, 방향
 r, c, d = map(int, input().split())
 
-# 방 상태
-board = [list(map(int, input().split())) for _ in range(N)]
+# 도로 상태
+board = [list(map(int, input().split())) for _ in range(n)]
 
 # 사방 탐색용 (상, 우, 하, 좌)
 dr, dc = (-1, 0, 1, 0), (0, 1, 0, -1)
 
 # 방문 체크
-visited = [[0] * M for _ in range(N)]
+visited = [[0] * m for _ in range(n)]
 visited[r][c] = 1
 
-# 로봇 청소기가 방문한 칸 수
+# 자동차가 방문한 도로의 총 면적
 area = 1
 
-# 로봇 청소기가 움직일 수 없을 때까지 반복
+# 자동차가 움직일 수 없을 때까지 반복
 while True:
     # 전진할 수 있을 때까지 4방향 탐색
     for i in range(4):

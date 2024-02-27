@@ -3,9 +3,9 @@ from collections import deque
 import sys
 input = sys.stdin.readline
 
-# 바이러스가 퍼지지 않는 영역 크기 구하기
+# 불이 퍼지지 않는 영역 크기 구하기
 def get_area():
-    # 바이러스가 퍼지지 않는 영역
+    # 불이 퍼지지 않는 영역
     area = n * m - cnt
 
     # 방문 체크
@@ -33,21 +33,21 @@ def get_area():
 
     return area
 
-###########################################################################
+#######################################################################
 
-# 지도 크기
+# 영역 크기
 n, m = map(int, input().split())
 
-# 지도
+# 영역
 board = []
 
-# 바이러스의 시작 지점
+# 불의 시작 지점
 start = []
 
-# 벽을 추가로 설치할 수 있는 위치
+# 방화벽을 추가로 설치할 수 있는 위치
 pos = []
 
-# 총 벽 개수
+# 총 방화벽 개수
 cnt = 3
 for i in range(n):
     row = list(map(int, input().split()))
@@ -60,19 +60,19 @@ for i in range(n):
         else:
             cnt += 1
 
-# 바이러스가 퍼지지 않는 최대 영역 크기
+# 불이 퍼지지 않는 최대 영역 크기
 max_area = 0
 
-# 새로 추가할 벽 위치 고르기
+# 새로 추가할 방화벽 위치 고르기
 for plus in combinations(pos, 3):
-    # 벽 설치
+    # 방화벽 설치
     for i, j in plus:
         board[i][j] = 1
 
-    # 현재 상태에서 바이러스가 퍼지지 않는 영역 크기 구하기
+    # 현재 상태에서 불이 퍼지지 않는 영역 크기 구하기
     max_area = max(max_area, get_area())
 
-    # 벽 설치 취소
+    # 방화벽 설치 취소
     for i, j in plus:
         board[i][j] = 0
 
