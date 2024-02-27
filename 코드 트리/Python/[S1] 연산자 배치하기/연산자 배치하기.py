@@ -1,6 +1,5 @@
 import sys
 input = sys.stdin.readline
-sys.setrecursionlimit(10000)
 
 # 최종 연산 구하기
 # idx: 현재까지 한 연산 수
@@ -33,19 +32,6 @@ def get_res(idx, result):
         get_res(idx + 1, result * nums[idx + 1])
         cnt[2] += 1
 
-    # 나눗셈
-    if cnt[3]:
-        cnt[3] -= 1
-        nresult = result
-        if result < 0:
-            nresult *= -1
-            nresult //= nums[idx + 1]
-            nresult *= -1
-        else:
-            nresult = result // nums[idx + 1]
-        get_res(idx + 1, nresult)
-        cnt[3] += 1
-
     return
 
 ###############################################################
@@ -56,7 +42,7 @@ n = int(input())
 # n개의 정수
 nums = list(map(int, input().split()))
 
-# 덧셈, 뺄셈, 곱셈, 나눗셈 개수
+# 덧셈, 뺄셈, 곱셈 개수
 cnt = list(map(int, input().split()))
 
 # 연산 결과의 최솟값과 최댓값
@@ -65,5 +51,4 @@ min_res, max_res = 1000000000, -1000000000
 # 모든 연산 구하기
 get_res(0, nums[0])
 
-print(max_res)
-print(min_res)
+print(min_res, max_res)
