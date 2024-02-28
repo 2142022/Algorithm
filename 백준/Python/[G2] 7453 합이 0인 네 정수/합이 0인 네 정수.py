@@ -1,11 +1,11 @@
-from bisect import bisect_left, bisect_right
+from collections import defaultdict
 import sys
 input = sys.stdin.readline
 
-# 배열의 크기
+# 배열 크기
 n = int(input())
 
-# 4개의 배열
+# 각 배열 (오름차순 정렬)
 A, B, C, D = [], [], [], []
 for _ in range(n):
     a, b, c, d = map(int, input().split())
@@ -13,51 +13,60 @@ for _ in range(n):
     B.append(b)
     C.append(c)
     D.append(d)
-
-# A + B, C + D
-AB, CD = [], []
-for i in range(n):
-    for j in range(n):
-        AB.append(A[i] + B[j])
-        CD.append(C[i] + D[j])
-
-# 오름차순 정렬
-AB.sort()
-CD.sort()
+A.sort()
+B.sort()
+C.sort()
+D.sort()
 
 # 합이 0이 되는 쌍의 개수
 cnt = 0
 
-# AB의 인덱스, CD의 인덱스
-idx1, idx2 = 0, len(CD) - 1
+# A + B의 모든 경우 (오름차순 정렬)
+AB = []
+# C + D의 모든 경우 (오름차순 정렬)
+CD = []
+for i in range(n):
+    for j in range(n):
+        AB.append(A[i] + B[j])
+        CD.append(C[i] + D[j])
+AB.sort()
+CD.sort()
 
-# AB, CD 탐색
-while idx1 < len(AB) and idx2 >= 0:
-    # A + B, C + D
-    ab, cd = AB[idx1], CD[idx2]
-    # A + B + C + D
-    num = ab + cd
+# AB, CD 크기
+m = len(AB)
 
-    # 0보다 크다면 C + D 감소
-    if num > 0:
-        idx2 -= 1
+# A + B의 인덱스, C + D의 인덱스
+abi, cdi = 0, m - 1
+while abi < m and cdi >= 0:
+    # a + b, c + d
+    ab, cd = AB[abi], CD[cdi]
 
-    # 0보다 작다면 A + B 증가
-    elif num < 0:
-        idx1 += 1
+    # 네 수의 합
+    s = ab + cd
 
-    # 0이라면 (A+B의 개수) * (C+D의 개수)를 cnt에 추가
+    # 네 수의 합이 0인 경우
+    if s == 0:
+        # 현재 a + b의 개수
+        ab_cnt = 0
+        while abi < m and AB[abi] == ab:
+            abi += 1
+            ab_cnt += 1
+
+        # 현재 c + d의 개수
+        cd_cnt = 0
+        while cdi >= 0 and CD[cdi] == cd:
+            cdi -= 1
+            cd_cnt += 1
+
+        # 합이 0인 개수
+        cnt += ab_cnt * cd_cnt
+
+    # 네 수의 합이 양수인 경우, C + D 줄이기
+    elif s > 0:
+        cdi -= 1
+
+    # 네 수의 합이 음수인 경우, A + B 늘리기
     else:
-        # (A + B)의 개수
-        cntAB = bisect_right(AB, ab) - bisect_left(AB, ab)
-        # (C + D)의 개수
-        cntCD = bisect_right(CD, cd) - bisect_left(CD, cd)
-
-        # cnt 갱신
-        cnt += cntAB * cntCD
-
-        # 인덱스 갱신
-        idx1 += cntAB
-        idx2 -= cntCD
+        abi += 1
 
 print(cnt)

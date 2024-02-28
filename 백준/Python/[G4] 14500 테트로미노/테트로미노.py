@@ -1,79 +1,69 @@
 import sys
 input = sys.stdin.readline
 
-# 사방 탐색을 위한 리스트
-dr = [-1, 1, 0, 0]
-dc = [0, 0, -1, 1]
+# 연속해서 4개 지점 선택하기
+# s: 현재까지 선택한 숫자의 합
+def get_sum(s):
+    global max_sum
 
-# 합의 최댓값 구하기
-# idx: 현재까지 더한 칸 수
-# now: 현재까지 더한 합
-def getMaxSum(idx, now):
-    # 4개를 모두 구한 경우
-    if idx == 4:
-        global max_sum
-        max_sum = max(max_sum, now)
+    # 4개의 수가 정해진 경우, 최댓값 비교
+    if len(pos) == 4:
+        max_sum = max(max_sum, s)
         return
 
-    # 현재 구한 3개에 최대 숫자를 더해도 최댓값보다 작은 경우
-    # 시간을 줄이기 위함
-    if idx == 3 and now + max_num <= max_sum:
+    # 나머지 모든 수를 더해도 최댓값을 넘지 못하는 경우 끝내기
+    if s + max_num * (4 - len(pos)) <= max_sum:
         return
 
-    # 다음 위치 찾기
-    for (r, c) in select:
-        for d in range(4):
-            # 다음 위치
-            nr = r + dr[d]
-            nc = c + dc[d]
-
-            # 종이 위에 있는지 확인
-            if nr < 0 or nr >= N or nc < 0 or nc >= M:
+    # 방문한 곳
+    for r, c in pos:
+        for nr, nc in ((r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)):
+            # 범위 체크
+            if not (0 <= nr < N and 0 <= nc < M):
                 continue
 
-            # 이미 방문했는지 체크
-            if visit[nr][nc] == True:
+            # 방문 체크
+            if visited[nr][nc]:
                 continue
 
-            # 방문 체크 후 재귀적으로 구하기
-            visit[nr][nc] = True
-            select.append((nr, nc))
-            getMaxSum(idx + 1, now + paper[nr][nc])
+            # 다음 위치 탐색
+            pos.append((nr, nc))
+            visited[nr][nc] = 1
+            get_sum(s + board[nr][nc])
+            visited[nr][nc] = 0
+            pos.pop()
 
-            # 방문 체크 취소
-            visit[nr][nc] = False
-            select.remove((nr, nc))
+############################################################################
 
-###################################################################
-
-# N X M 크기의 종이
+# 종이 크기
 N, M = map(int, input().split())
 
-# 종이 위의 각 칸의 수와 최대 숫자 구하기
-paper = []
+# 종이에 쓰여 있는 수
+board = []
+# 종이 위의 최대 숫자
 max_num = 0
-for i in range(N):
-    tmp = list(map(int, input().split()))
-    max_num = max(max_num, max(tmp))
-    paper.append(tmp)
+for _ in range(N):
+    row = list(map(int, input().split()))
+    board.append(row)
+    max_num = max(max_num, max(row))
 
-# 테트로미노에는 4개의 정사각형을 이어붙일 수 있는 모든 경우의 수가 있으므로
-# 연속된 4개를 더해서 가장 큰 합을 구하기
-
-# 방문 체크
-visit = [[False] * M for _ in range(N)]
-
-# 최대값
+# 테트로미노가 놓인 칸에 쓰인 수들의 합의 최댓값
 max_sum = 0
 
-# 합의 최대값 구하기
+# 방문한 위치
+pos = []
+# 방문 체크
+visited = [[0] * M for _ in range(N)]
+
+# 주어진 테트로미노는 4개를 연속해서 만들 수 있는 모든 모양
+# -> 연속한 4개의 숫자의 최대 합 구하기
 for i in range(N):
     for j in range(M):
-        # 현재 더한 칸의 위치 정보를 담은 리스트
-        select = []
-        select.append((i, j))
-        visit[i][j] = True
-        getMaxSum(1, paper[i][j])
-        visit[i][j] = False
+        # 현재 지점에서 연속적으로 4개를 선택했을 때 최대 합 구하기
+        pos.append((i, j))
+        visited[i][j] = 1
+        get_sum(board[i][j])
+        pos.pop()
+        visited[i][j] = 0
 
 print(max_sum)
