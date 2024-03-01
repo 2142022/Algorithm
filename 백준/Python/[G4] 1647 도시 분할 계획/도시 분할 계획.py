@@ -1,45 +1,67 @@
-import heapq
+from heapq import heappush, heappop
 import sys
 input = sys.stdin.readline
 
-# x번 집과 연결된 집 중 대표 집 찾기
-def find_parent(x):
-    # 재귀로 대표 집 찾기
-    if parent[x] != x:
-        parent[x] = find_parent(parent[x])
-    return parent[x]
+# 집 x와 연결된 집 중 가장 작은 번호 구하기
+def find_house(x):
+    if min_idx[x] != x:
+        min_idx[x] = find_house(min_idx[x])
+    return min_idx[x]
 
-#######################################
+########################################################################
 
-# N: 집의 개수, M: 길의 개수
+# 집 x, y 연결하기
+def connect(x, y):
+    x, y = find_house(x), find_house(y)
+
+    # 이미 연결되어 있는 경우
+    if x == y:
+        return False
+
+    # 연결하기
+    if x < y:
+        min_idx[y] = x
+    else:
+        min_idx[x] = y
+    return True
+
+########################################################################
+
+# 집 개수, 길 개수
 N, M = map(int, input().split())
 
-# 집과 연결된 집 중 대표 집 번호
-# 처음에는 자기 자신으로 초기화
-parent = [i for i in range(N + 1)]
-
-# 길의 정보가 담긴 리스트
-path = []
+# 유지비, 두 집을 담은 최소 힙
+h = []
 for _ in range(M):
-    # A번 집과 B번 집을 연결하는 길의 유지비가 C
     A, B, C = map(int, input().split())
+    heappush(h, (C, A, B))
 
-    # 유지비가 작은 순으로 담기
-    heapq.heappush(path, (C, A, B))
+# 각 집에 연결된 집 중 가장 작은 번호
+min_idx = [i for i in range(N + 1)]
 
-# 최종적으로 연결되는 길들의 유지비
-total_cost = 0
-# 최종적으로 연결되는 길 중 가장 큰 유지비
+# 연결한 간선 개수
+cnt = 0
+
+# 연결한 간선 중 가장 큰 유지비
 max_cost = 0
 
-# 모든 길의 정보 확인
-while path:
-    C, A, B = heapq.heappop(path)
+# 연결한 모든 유지비의 합
+s = 0
 
-    # A, B가 아직 연결되어 있지 않는 경우에만 추가
-    if find_parent(A) != find_parent(B):
-        parent[find_parent(B)] = find_parent(A)
-        total_cost += C
-        max_cost = max(max_cost, C)
+# 모든 집 연결하기
+while h:
+    # 가장 작은 유지비를 가진 간선
+    C, A, B = heappop(h)
 
-print(total_cost - max_cost)
+    # 두 집 연결하기
+    if connect(A, B):
+        cnt += 1
+        max_cost = C
+        s += C
+
+        # 모든 집을 연결한 경우 끝내기
+        if cnt == N - 1:
+            break
+
+# 두 마을로 분리하기 위해, 가장 유지비가 큰 간선 지우기
+print(s - max_cost)
