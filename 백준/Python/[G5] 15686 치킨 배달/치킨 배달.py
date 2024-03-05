@@ -1,44 +1,71 @@
-from itertools import combinations
 import sys
 input = sys.stdin.readline
 
-# N: 도시의 크기, M: 선택할 수 있는 치킨집의 최대 개수
+# 치킨집 하나씩 선택하기
+# cnt: 선택한 치킨집 수
+# start: 현재 선택가능한 치킨집 중 최소 번호
+def select(cnt, start, dist):
+    global min_sum
+
+    # m개의 치킨집을 모두 선택한 경우
+    if cnt == M:
+        min_sum = min(min_sum, sum(dist))
+        # 모든 사람이 갈 수 있는 최단 거리인 경우 끝내기
+        if min_sum == limit:
+            return 1
+        return 0
+
+    # 치킨집 선택
+    for i in range(start, C - M + cnt + 1):
+        # 현재까지의 거리 저장
+        dist_copy = dist[:]
+        for p in range(P):
+            dist_copy[p] = min(dist_copy[p], info[p][i])
+        if select(cnt + 1, i + 1, dist_copy):
+            return 1
+
+    return 0
+
+##################################################################
+
+# 도시 크기, 남길 치킨집 개수
 N, M = map(int, input().split())
 
-# 집의 위치
-house = []
-
-# 치킨집의 위치
-chicken = []
-
-# 집과 치킨집의 위치 입력받기
+# 사람 위치, 치킨집 위치
+people, chicken = [], []
 for i in range(N):
-    tmp = list(map(int, input().split()))
+    row = list(map(int, input().split()))
+    for j, info in enumerate(row):
+        if info == 1:
+            people.append((i, j))
+        elif info == 2:
+            chicken.append((i, j))
 
-    for j in range(N):
-        if tmp[j] == 1:
-            house.append([i, j])
-        elif tmp[j] == 2:
-            chicken.append([i, j])
+# 사람 수, 치킨집 수
+P, C = len(people), len(chicken)
 
-# 도시의 치킨 거리의 최솟값
-result = 2147483647
+# 각 사람이 각 치킨집까지의 거리
+info = [[0] * C for _ in range(P)]
+# 모든 사람이 갈 수 있는 최단 거리 합
+limit = 0
+for i in range(P):
+    # 사람 위치
+    pr, pc = people[i]
 
-# M개의 치킨집 뽑기(조합)
-for comb in combinations(chicken, M):
-    # 도시의 치킨 거리
-    total = 0
-    
-    # 집마다 가장 가까운 치킨집과의 거리 구하기
-    for h in house:
-        # 가장 가까운 치킨집과의 거리
-        min_len = 2147483647
+    # 현재 사람과 가장 가까운 치킨집까지의 거리
+    for j in range(C):
+        # 치킨집 위치
+        cr, cc = chicken[j]
+        info[i][j] = abs(cr - pr) + abs(cc - pc)
+    limit += min(info[i])
 
-        for c in comb:
-            min_len = min(min_len, abs(h[0] - c[0]) + abs(h[1] - c[1]))
+# 치킨집 m개를 남겼을 때 가능한 각 사람들의 치킨집 거리 총 합 중 최솟값
+min_sum = 2 * P * N
 
-        total += min_len
+# 각 사람이 갈 수 있는 치킨집까지의 최단 거리
+dist = [2 * N] * P
 
-    result = min(result, total)
+# 치킨집 하나씩 선택하기
+select(0, 0, dist)
 
-print(result)
+print(min_sum)

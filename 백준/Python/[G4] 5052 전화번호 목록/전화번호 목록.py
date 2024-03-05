@@ -1,29 +1,30 @@
 import sys
 input = sys.stdin.readline
 
-# 전화번호의 일관성 체크
-def check(phone):
-    # p1: 접두어인지 확인할 전화번호
-    # p2: p1이 접두어에 있는지 확인할 전화번호
-    for p1, p2 in zip(phone, phone[1:]):
-        if p2.startswith(p1):
+# 전화번호가 일관성이 있는지 확인
+def consistency():
+    # 전화번호가 1개면 항상 일관성 있음
+    if n == 1:
+        return True
+
+    # 탐색 전화번호가 다음 전화번호의 접두어인지 확인
+    for i in range(n - 1):
+        if nums[i + 1].startswith(nums[i]):
             return False
     return True
 
-######################################################
+############################################################
 
-# 테스트케이스 개수
-t = int(input())
-for _ in range(t):
-    # 전화번호 개수
+# 테스트 케이스
+for _ in range(int(input())):
+    # 전화번호 수
     n = int(input())
 
-    # 전화번호 목록
-    phone = [input().strip() for _ in range(n)]
+    # 모든 전화번호 (사전순 정렬)
+    nums = sorted([input().rstrip() for _ in range(n)])
 
-    # 일관성 체크
-    # 순서대로 한번씩만 체크하기 위해 정렬하기
-    if check(sorted(phone)):
+    # 전화번호가 일관성이 있는지 확인
+    if consistency():
         print('YES')
     else:
         print('NO')
