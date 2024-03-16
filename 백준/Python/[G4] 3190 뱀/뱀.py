@@ -2,72 +2,77 @@ from collections import defaultdict, deque
 import sys
 input = sys.stdin.readline
 
+# 게임 진행
+def play():
+    # 게임 시간
+    time = 1
+
+    # 뱀 머리 위치, 방향
+    r, c, d = 0, 0, 0
+    board[r][c] = 1
+
+    # 사방 탐색 (우, 하, 좌, 상)
+    dr, dc = (0, 1, 0, -1), (1, 0, -1, 0)
+
+    # 뱀의 몸의 위치를 담은 큐
+    pos = deque([(0, 0)])
+
+    # 게임 진행
+    while True:
+        # 뱀 머리 이동
+        r += dr[d]
+        c += dc[d]
+
+        # 벽을 만난 경우 끝내기
+        if not (0 <= r < N and 0 <= c < N):
+            return time
+
+        # 자신의 몸이 있는 경우 끝내기
+        if board[r][c] == 1:
+            return time
+
+        # 사과가 없는 경우 꼬리 이동
+        if board[r][c] == 0:
+            pr, pc = pos.popleft()
+            board[pr][pc] = 0
+
+        # 현재 위치 저장
+        pos.append((r, c))
+        board[r][c] = 1
+
+        # 뱀 회전
+        d = (d + T[time]) % 4
+
+        # 시간 증가
+        time += 1
+
+###############################################################
+
 # 보드 크기
 N = int(input())
-# 보드 (상단 좌측이 1행 1열이므로 0행, 0열 추가)
-# 사과가 있는 곳은 1, 뱀이 있는 곳은 2
-board = [[0] * (N + 1) for _ in range(N + 1)]
 
-# 사과 개수
+# 보드
+board = [[0] * N for _ in range(N)]
+
+# 사과 수
 K = int(input())
+
 # 사과 체크
 for _ in range(K):
-    i, j = map(int, input().split())
-    board[i][j] = 1
+    r, c = map(int, input().split())
+    board[r - 1][c - 1] = 2
+
+# 뱀의 방향 변환 횟수
+L = int(input())
 
 # 뱀의 방향 변환 정보
-L = int(input())
-rotate = defaultdict(int)
+T = defaultdict(int)
 for _ in range(L):
-    X, C = input().rstrip().split()
-    if C == 'D':
-        rotate[int(X)] = 1
+    X, D = input().split()
+    if D == 'L':
+        T[int(X)] = -1
     else:
-        rotate[int(X)] = -1
+        T[int(X)] = 1
 
-# 사방 탐색용 (상, 우, 하, 좌)
-dr = (-1, 0, 1, 0)
-dc = (0, 1, 0, -1)
-
-# 뱀 머리 위치, 방향
-r = c = d = 1
-# 뱀 있는 위치
-snake = deque([(0, 0)])
-
-# 게임 시간
-time = 0
-
-# 게임 진행
-while True:
-    # 방향 전환
-    if time in rotate:
-        d = (d + rotate[time]) % 4
-
-    # 이동
-    r += dr[d]
-    c += dc[d]
-
-    # 보드를 벗어난 경우 끝내기
-    if not (1 <= r <= N and 1 <= c <= N):
-        break
-
-    # 뱀의 몸과 부딪히는 경우 끝내기
-    if board[r][c] == 2:
-        break
-
-    # 사과가 없는 경우, 꼬리 위치 변경
-    if board[r][c] == 0:
-        tr, tc = snake.popleft()
-        board[tr][tc] = 0
-    # 사과 먹기
-    elif board[r][c] == 1:
-        board[r][c] = 0
-
-    # 뱀 위치 갱신
-    board[r][c] = 2
-    snake.append((r, c))
-
-    # 시간 증가
-    time += 1
-
-print(time + 1)
+# 게임이 몇 초에 끝나는지 출력
+print(play())
