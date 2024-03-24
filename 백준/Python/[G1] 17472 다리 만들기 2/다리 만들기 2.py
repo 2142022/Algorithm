@@ -1,99 +1,137 @@
+from collections import deque
 from heapq import heappush, heappop
-from collections import deque, defaultdict
 import sys
 input = sys.stdin.readline
 
-# 지도의 세로, 가로 길이
+# (i, j)부터 시작되는 섬 num으로 체크하기
+def find_island(i, j, num):
+    board[i][j] = num
+
+    # 탐색 위치를 담은 큐
+    q = deque([(i, j)])
+    while q:
+        r, c = q.popleft()
+
+        # 사방 탐색
+        for nr, nc in ((r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)):
+            # 범위 체크
+            if not (0 <= nr < N and 0 <= nc < M):
+                continue
+
+            # 땅 체크
+            if board[nr][nc] == -1:
+                board[nr][nc] = num
+                q.append((nr, nc))
+
+###############################################################################
+
+# 두 섬을 연결할 수 있는 모든 다리 찾기
+def find_bridge():
+    for i in range(N):
+        j = 1
+        while j < M:
+            # 땅 패스
+            while j < M and board[i][j]:
+                j += 1
+
+            # 바다인 경우 다리 길이 세기
+            d = 0
+            while j + d < M and board[i][j + d] == 0:
+                d += 1
+
+            # 다리인 경우
+            if j + d < M and d >= 2:
+                island1, island2 = board[i][j - 1], board[i][j + d]
+                if island1 and island2 and island1 != island2:
+                    heappush(h, (d, island1, island2))
+            j += d
+
+    for j in range(M):
+        i = 1
+        while i < N:
+            # 땅 패스
+            while i < N and board[i][j]:
+                i += 1
+
+            # 바다인 경우 다리 길이 세기
+            d = 0
+            while i + d < N and board[i + d][j] == 0:
+                d += 1
+
+            # 다리인 경우
+            if i + d < N and d >= 2:
+                island1, island2 = board[i - 1][j], board[i + d][j]
+                if island1 and island2 and island1 != island2:
+                    heappush(h, (d, island1, island2))
+            i += d
+
+###############################################################################
+
+# 섬 x와 연결된 섬들 중 가장 번호가 작은 섬
+def find_idx(x):
+    if min_idx[x] != x:
+        min_idx[x] = find_idx(min_idx[x])
+    return min_idx[x]
+
+###############################################################################
+
+# 두 섬 i1, i2가 아직 연결이 안된 경우 연결
+def connect(i1, i2):
+    i1 = find_idx(i1)
+    i2 = find_idx(i2)
+
+    if i1 < i2:
+        min_idx[i2] = i1
+        return 1
+    elif i1 > i2:
+        min_idx[i1] = i2
+        return 1
+    return 0
+
+###############################################################################
+
+# 지도 크기
 N, M = map(int, input().split())
+
 # 지도
-graph = [list(map(int, input().split())) for _ in range(N)]
+board = [list(map(lambda x: -int(x), input().split())) for _ in range(N)]
 
-# 사방 탐색용
-dr, dc = (-1, 1, 0, 0), (0, 0, -1, 1)
-
-# 섬 분류하기
-alpha = ord('A')
+# 섬 나누기
+island_cnt = 1
 for i in range(N):
     for j in range(M):
-        if graph[i][j] == 1:
-            # BFS로 현재 섬 모두 찾기
-            q = deque([(i, j)])
-            graph[i][j] = alpha
-            while q:
-                r, c = q.popleft()
-                for d in range(4):
-                    nr, nc = r + dr[d], c + dc[d]
-                    if 0 <= nr < N and 0 <= nc < M and graph[nr][nc] == 1:
-                        graph[nr][nc] = alpha
-                        q.append((nr, nc))
-            alpha += 1
+        # 섬 시작점
+        if board[i][j] == -1:
+            find_island(i, j, island_cnt)
+            island_cnt += 1
 
-# 섬 개수
-I = alpha - ord('A')
+# 모든 다리 정보를 담은 최소 힙 (다리 길이, 연결되는 두 섬)
+h = []
+find_bridge()
 
-# 섬끼리 연결할 수 있는 최소 길이의 다리
-bridge = defaultdict(lambda:100)
-# 가로 다리
-for i in range(N):
-    j = 0
-    while j < M - 1:
-        if graph[i][j] >= ord('A') and graph[i][j + 1] == 0:
-            start = graph[i][j]
-            length = 1
-            j += 2
-            while j < M and graph[i][j] == 0:
-                length += 1
-                j += 1
-            if j < M:
-                end = graph[i][j]
-                A, B = min(start, end), max(start, end)
-                if length > 1:
-                    bridge[(A, B)] = min(bridge[(A, B)], length)
-                j -= 1
-        j += 1
-# 세로 다리
-for j in range(M):
-    i = 0
-    while i < N - 1:
-        if graph[i][j] >= ord('A') and graph[i + 1][j] == 0:
-            start = graph[i][j]
-            length = 1
-            i += 2
-            while i < N and graph[i][j] == 0:
-                length += 1
-                i += 1
-            if i < N:
-                end = graph[i][j]
-                A, B = min(start, end), max(start, end)
-                if length > 1:
-                    bridge[(A, B)] = min(bridge[(A, B)], length)
-                i -= 1
-        i += 1
+# 연결된 섬 중 가장 작은 섬
+min_idx = [i for i in range(island_cnt)]
 
-# 연결된 섬 중 가장 작은 숫자(알파벳)의 섬 찾기
-def get_connect(x):
-    if connect[x] != x:
-        connect[x] = get_connect(connect[x])
-    return connect[x]
+# 최소 다리 길이
+total = 0
 
 # 섬 연결하기
-result = 0
-connect = [i for i in range(I)]
-cnt = 0
-h = []
-for k, v in bridge.items():
-    heappush(h, (v, k[0] - ord('A'), k[1] - ord('A')))
-while h and cnt < I:
-    c, a, b = heappop(h)
-    A = get_connect(a)
-    B = get_connect(b)
-    if A != B:
-        cnt += 1
-        connect[max(A, B)] = connect[min(A, B)]
-        result += c
+connect_cnt = 0
+while h:
+    # 현재 연결할 수 있는 가장 짧은 다리와 두 섬
+    l, island1, island2 = heappop(h)
 
-# 모든 섬을 연결할 수 없는 경우 (다리 개수가 섬 개수 - 1이 아닌 경우)
-if cnt != I - 1:
+    # 아직 연결이 안된 경우 연결
+    if connect(island1, island2):
+        connect_cnt += 1
+        total += l
+
+        # 모두 연결된 경우 끝내기
+        if connect_cnt == island_cnt - 2:
+            break
+
+# 모든 섬을 연결 불가능한 경우
+if connect_cnt != island_cnt - 2:
     print(-1)
 else:
-    print(result)
+    print(total)
