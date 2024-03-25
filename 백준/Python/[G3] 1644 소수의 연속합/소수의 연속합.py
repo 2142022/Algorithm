@@ -41,7 +41,7 @@ for i in range(l):
 
     # 다음 소수들 합하기
     for j in range(i + 1, l):
-        s +=  + prime[j]
+        s += prime[j]
 
         # N이라면 경우의 수 추가
         if s == N:
